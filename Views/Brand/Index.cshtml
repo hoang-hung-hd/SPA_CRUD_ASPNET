@@ -1,0 +1,259 @@
+﻿@model IEnumerable<useCookieAuth.Models.Brand>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+
+<p>
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" @*data-toggle="modal" *@data-target="#exampleModal" id="add-brand" onclick="CreateBrand()">
+        Add Brand
+    </button>
+
+    @* <input type="hidden" value="@Url.Action("Create","Brand")" id="urlBR">*@
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.BrandName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="brandList"></tbody>
+</table>
+
+
+<!-- Modal Add or Edit -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Employee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="display: none">
+                        <label>Brand ID</label>
+                        <input type="text" class="form-control" required="required" name="brandId" id="brandId" />
+                    </div>
+                    <div class="form-group">
+                        <label>Brand Name</label>
+                        <input type="text" class="form-control" required="required" name="brandName" id="brandName" />
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" class="form-control" required="required" name="brandDescription" id="brandDescription" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <input type="submit" class="btn btn-primary" id="submit-form" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail -->
+<div class="modal fade" id="brand-detail" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Brand Detail</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <p id="brandName-detail">Brand Name :</p>
+                    </div>
+                    <div class="form-group">
+                        <p id="brandDescription-detail">Description : </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+
+}
+<script>
+    $(document).ready(function () {
+        GetAllBrand();
+    })
+    $("#submit-form").click(function(id) {
+        if (id == null) { id = 0 };
+        event.preventDefault();
+        AddOrEdit(id);           
+    });
+    function CreateBrand() {
+        $('#exampleModal').modal('show');
+        $('#brandId').val("");
+        $('#brandName').val("");
+        $('#brandDescription').val(""); 
+    }
+    function GetAllBrand() {
+        $.ajax({
+            type: "GET",
+            url: '@(Url.Action("GetAllBrand", "Brand"))',
+            dataType: "json",
+            cache: false,
+            contentType: "application/json",
+            success: function(data) {
+                if (data && (typeof data.Error == "undefined" || !data.Error)) {
+                    if (data.status == 1) {
+                        BindTableBrand(data.models)
+                    }
+                }
+                else {
+                    alert("Data fail");
+                }
+            },
+            error: function(response) {
+                console.log(response);
+            }
+        })
+    }
+    function BindTableBrand(listData) {
+        $("#brandList").empty();
+        for (var i in listData)
+        {
+            var item = listData[i];
+            var row = "";
+            row += '<tr class="">';
+            row += '<td class="column1"><div class="col1">' + item.brandName + '</div></td>';
+            row += '<td class="column2"><div class="col2">' + item.description + '</div></td>';
+
+            row += '<td class="column3"><div class="col2">' + 
+                    '<button class="btn btn-primary" onclick="EditBrand('+item.brandId+')">Edit</button> |'
+                    + '<button class="btn btn-success" onclick="DetailBrand(' + item.brandId + ')">Detail</button> |'
+                    + '<button class="btn btn-danger" onclick="DeleteBrand(' + item.brandId + ')">Delete</button> '
+                    + '</div></td>';
+            row += '</tr>';
+            $("#brandList").append(row);
+        }
+    }
+    function AddOrEdit(id) {
+        var BrandId = $('#brandId').val();
+        var BrandName = $('#brandName').val();
+        var Description = $('#brandDescription').val();
+        if(BrandId == null || BrandId == ""){
+            BrandId = 0;
+        }
+        var postData = {
+            "BrandId":BrandId, 
+            "BrandName": BrandName,
+            "Description": Description
+        };
+        var data = JSON.stringify(postData);
+        console.log(data);
+        $.ajax({
+            type: "POST",
+            async:true,
+            url: '@(Url.Action("CreateOrEdit", "Brand", new {id="@BrandId"}))',
+            data: data,
+            dataType: "json",
+            cache: false,
+            contentType: "application/json",
+            success: function(data) {
+                if (data.status == 1) {
+                    $('#exampleModal').modal('hide');
+                    GetAllBrand();
+                }
+            },
+            error: function(response) {
+                console.log(response);
+            }
+        })
+    }
+    function DetailBrand(id) {
+        $('#brand-detail').modal('show');
+        $.ajax({
+            type: "GET",
+            url: '@(Url.Action("GetDetailBrand", "Brand"))'+'/'+id,
+            dataType: "json",
+            cache: false,
+            contentType: "application/json",
+            success: function(data) {
+                    console.dir(data)
+                    var content1 = $('#brandName-detail').html();
+                    var content2 = $('#brandDescription-detail').html();
+                        $('#brandName-detail').html(content1 + data.brandName);
+                        $('#brandDescription-detail').html(content2 + data.description);     
+            },
+            error: function(response) {
+                console.log(response);
+            }
+        })
+    }
+    function EditBrand(id) {
+        $('#exampleModal').modal('show');
+        var params = {
+            "BrandId": id
+        }
+        console.log(params.BrandId);
+        $.ajax({
+            type: "GET",
+            url: '@(Url.Action("Edit", "Brand"))'+'/'+id,
+            dataType: "json",
+            cache: false,
+            contentType: "application/json",
+            success: function(data) {
+                    $('#exampleModal').modal('show');
+                    $('#brandId').val(data.brandId);
+                    $('#brandName').val(data.brandName);
+                    $('#brandDescription').val(data.description); 
+            },
+            error: function(response) {
+                console.log(response);
+            }
+        })
+    }
+
+    function DeleteBrand(id) {
+        let isDelete = confirm("Are you sure to delete this brand?");
+        if (isDelete) {
+            $.ajax({
+                type: "DELETE",
+                url: '@(Url.Action("DeleteBrand", "Brand"))' + '/' + id,
+                dataType: "json",
+                cache: false,
+                contentType: "application/json",
+                success: function(data) {
+                    if (data && (typeof data.Error == "undefined" || !data.Error)) {
+                        if (data.status == 1) {
+                            GetAllBrand();
+                        }
+                    }
+                    else {
+                        alert("Data fail");
+                        
+                    }
+                },
+                error: function(response) {
+                    console.log(response);
+                }
+            })
+        }
+
+    }
+</script>
