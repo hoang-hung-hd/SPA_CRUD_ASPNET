@@ -10541,6 +10541,8 @@
       "Microsoft.EntityFrameworkCore >= 6.0.8",
       "Microsoft.EntityFrameworkCore.Design >= 6.0.8",
       "Microsoft.EntityFrameworkCore.Proxies >= 6.0.8",
+      "Microsoft.EntityFrameworkCore.Relational >= 6.0.8",
+      "Microsoft.EntityFrameworkCore.Relational.Design >= 1.1.6",
       "Microsoft.EntityFrameworkCore.SqlServer >= 6.0.8",
       "Microsoft.EntityFrameworkCore.SqlServer.Design >= 1.1.6",
       "Microsoft.EntityFrameworkCore.Tools >= 6.0.8",
@@ -10610,6 +10612,14 @@
           "Microsoft.EntityFrameworkCore.Proxies": {
             "target": "Package",
             "version": "[6.0.8, )"
+          },
+          "Microsoft.EntityFrameworkCore.Relational": {
+            "target": "Package",
+            "version": "[6.0.8, )"
+          },
+          "Microsoft.EntityFrameworkCore.Relational.Design": {
+            "target": "Package",
+            "version": "[1.1.6, )"
           },
           "Microsoft.EntityFrameworkCore.SqlServer": {
             "target": "Package",

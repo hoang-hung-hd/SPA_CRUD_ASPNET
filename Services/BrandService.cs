@@ -1,4 +1,6 @@
-﻿using useCookieAuth.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
+using useCookieAuth.Models;
 
 namespace useCookieAuth.Services
 {
@@ -13,7 +15,9 @@ namespace useCookieAuth.Services
 
         public IEnumerable<Brand> GetAll()
         {
-            return _context.Brands;
+            string sql = "EXEC dbo.GetAllBrand";
+            List<Brand> listBrand = _context.Brands.FromSqlRaw<Brand>(sql).ToList();
+            return listBrand;
         }
 
         public Brand GetById(int id)
@@ -59,9 +63,21 @@ namespace useCookieAuth.Services
 
         private Brand getBrand(int id)
         {
-            var brand = _context.Brands.Find(id);
+            string sql = "EXEC Get_Brand_ById @BrandId";
+            List<SqlParameter> parms = new List<SqlParameter>
+            {
+                // Create parameter(s)    
+                new SqlParameter { ParameterName = "@BrandId", Value = id }
+            };
+            Brand brand = _context.Brands.FromSqlRaw<Brand>(sql, parms.ToArray()).ToList().FirstOrDefault();
             if (brand == null) throw new KeyNotFoundException("Brand not found");
             return brand;
         }
     }
 }
+
+/*
+ * Lưu ý các điều sau :
+       1.Thư viện sử dụng : Microsoft.Data.SqlClient not System.Data.SqlClicent
+       2.Lấy 1 record thì phải .Tolist().FirstOrDefault()
+ */
